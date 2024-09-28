@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Состояние нажатой кнопки -->
+    <item android:state_pressed="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#FF0000" /> <!-- Цвет при нажатии (красный) -->
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Обычное состояние кнопки -->
+    <item android:state_enabled="true">
+        <shape android:shape="rectangle">
+            <solid android:color="#00FF00" /> <!-- Обычный цвет (зелёный) -->
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+
+    <!-- Состояние отключённой кнопки -->
+    <item android:state_enabled="false">
+        <shape android:shape="rectangle">
+            <solid android:color="#808080" /> <!-- Цвет при отключении (серый) -->
+            <corners android:radius="8dp" />
+        </shape>
+    </item>
+</selector>
