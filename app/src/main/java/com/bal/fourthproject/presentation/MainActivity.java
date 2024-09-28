@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -42,24 +43,11 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
-    private RecyclerView recyclerView;
-    private CharacterAdapter characterAdapter;
+    private FavouriteCharactersFragment favouriteCharactersFragment = new FavouriteCharactersFragment();
+    private AllCharactersFragment allCharactersFragment = new AllCharactersFragment();
 
-    private final BroadcastReceiver dataReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if ("com.bal.fourthproject.DATA_UPDATED".equals(intent.getAction())) {
-                ArrayList<Character> characters = intent.getParcelableArrayListExtra("characters");
-                updateUI(characters);
-            }
-        }
-    };
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-        LocalBroadcastManager.getInstance(this).registerReceiver(dataReceiver, new IntentFilter("com.bal.fourthproject.DATA_UPDATED"));
-    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,19 +60,11 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
+        replaceFragment(favouriteCharactersFragment);
         // Инициализация базы данных, DAO и репозитория
-        AppDatabase db = AppDatabase.getInstance(this);
+        AppDatabase db = AppDatabase.getInstance(getApplicationContext());
         CharacterDao characterDao = db.characterDao();
         CharacterRepository characterRepository = new CharacterRepositoryImpl(characterDao);
-
-        // Настройка RecyclerView
-        recyclerView = findViewById(R.id.recyclerView);
-        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // Инициализация адаптера с использованием репозитория
-        characterAdapter = new CharacterAdapter(new ArrayList<>(), characterRepository);
-        recyclerView.setAdapter(characterAdapter);
-
         // Запуск сервиса для получения данных
         Intent intent = new Intent(this, DataFetchService.class);
         startService(intent);
@@ -108,13 +88,35 @@ public class MainActivity extends AppCompatActivity {
         }).start();
     }
 
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(dataReceiver);
+    private void replaceFragment(Fragment fragment) {
+        getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.second_fragment_container, fragment)
+                .commit();
     }
 
-    private void updateUI(ArrayList<Character> characters) {
-        characterAdapter.setCharacters(characters);
+    private void addFragment(Fragment fragment){
+
+        // Проверяем, добавлен ли фрагмент уже
+        Fragment existingFragment = getSupportFragmentManager().findFragmentById(R.id.first_fragment_container);
+        if (existingFragment != null && existingFragment.getClass().equals(fragment.getClass())) {
+            // Фрагмент уже добавлен, не делаем ничего
+            return;
+        }
+
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.first_fragment_container, fragment)
+                .addToBackStack(null)
+                .commit();
+
     }
+
+    private void removeFragment(Fragment fragment){
+        getSupportFragmentManager()
+                .beginTransaction()
+                .remove(fragment)
+                .commit();
+    }
+
 }
