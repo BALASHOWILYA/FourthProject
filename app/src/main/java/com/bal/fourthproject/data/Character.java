@@ -1,4 +1,4 @@
-package com.bal.fourthproject;
+package com.bal.fourthproject.data;
 
 import android.os.Parcel;
 import android.os.Parcelable;

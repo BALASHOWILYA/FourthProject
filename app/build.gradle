@@ -43,4 +43,7 @@ dependencies {
     implementation libs.glide
     implementation libs.compiler
 
+    implementation libs.room.runtime
+    annotationProcessor libs.room.compiler
+
 }

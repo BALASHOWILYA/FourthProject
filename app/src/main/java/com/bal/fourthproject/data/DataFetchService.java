@@ -1,14 +1,12 @@
-package com.bal.fourthproject;
+package com.bal.fourthproject.data;
 
 import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.os.Parcelable;
 import android.util.Log;
 
-import androidx.annotation.Nullable;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import java.util.ArrayList;
@@ -52,9 +50,6 @@ public class DataFetchService extends Service {
 
 
                             List<Character> characters = response.body().getCharacters();
-                            for (Character character : characters) {
-                                Log.d("DataFetchService", character.toString());
-                            }
                             mainHandler.post(new Runnable() {
                                 @Override
                                 public void run() {

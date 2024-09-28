@@ -2,4 +2,19 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="my_light_primary">#6200EE</color> <!-- Фиолетовый основной цвет -->
+    <color name="my_light_on_primary">#FFFFFF</color> <!-- Белый цвет текста на основном -->
+    <color name="my_light_primary_container">#BB86FC</color> <!-- Контейнер для основного цвета -->
+    <color name="my_light_on_primary_container">#3700B3</color> <!-- Цвет текста в контейнере основного -->
+
+    <color name="my_light_secondary">#03DAC6</color> <!-- Вторичный цвет (бирюзовый) -->
+    <color name="my_light_on_secondary">#000000</color> <!-- Черный цвет текста на вторичном -->
+    <color name="my_light_secondary_container">#018786</color> <!-- Контейнер для вторичного цвета -->
+    <color name="my_light_on_secondary_container">#000000</color> <!-- Цвет текста в контейнере вторичного -->
+
+    <color name="my_light_background">#FFFFFF</color> <!-- Белый цвет фона -->
+    <color name="my_light_on_background">#000000</color> <!-- Черный цвет текста на фоне -->
+
+    <color name="my_light_surface">#FFFFFF</color> <!-- Белый цвет поверхности -->
+    <color name="my_light_on_surface">#000000</color> <!-- Черный цвет текста на поверхности -->
 </resources>

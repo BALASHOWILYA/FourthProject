@@ -1,4 +1,4 @@
-package com.bal.fourthproject;
+package com.bal.fourthproject.data;
 
 import com.google.gson.annotations.SerializedName;
 

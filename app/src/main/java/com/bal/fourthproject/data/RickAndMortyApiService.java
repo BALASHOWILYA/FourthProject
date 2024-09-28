@@ -1,4 +1,4 @@
-package com.bal.fourthproject;
+package com.bal.fourthproject.data;
 
 import retrofit2.Call;
 import retrofit2.http.GET;
