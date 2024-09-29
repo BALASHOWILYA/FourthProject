@@ -7,7 +7,7 @@ import java.util.concurrent.ExecutionException;
 public class GetAllCharactersUseCase {
     private  CharacterRepository characterRepository;
 
-    public void GetAllCoursesUseCase(CharacterRepository characterRepository) {
+    public GetAllCharactersUseCase(CharacterRepository characterRepository) {
         this.characterRepository = characterRepository;
     }
 

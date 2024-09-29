@@ -45,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "MainActivity";
     private FavouriteCharactersFragment favouriteCharactersFragment = new FavouriteCharactersFragment();
     private AllCharactersFragment allCharactersFragment = new AllCharactersFragment();
-
+    private CharacterSearchFragment characterSearchFragment = new CharacterSearchFragment();
 
 
 
@@ -59,8 +59,8 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-
-        replaceFragment(favouriteCharactersFragment);
+        addFragment(characterSearchFragment);
+        replaceFragment(allCharactersFragment);
         // Инициализация базы данных, DAO и репозитория
         AppDatabase db = AppDatabase.getInstance(getApplicationContext());
         CharacterDao characterDao = db.characterDao();
@@ -68,24 +68,6 @@ public class MainActivity extends AppCompatActivity {
         // Запуск сервиса для получения данных
         Intent intent = new Intent(this, DataFetchService.class);
         startService(intent);
-
-        // Получение данных в отдельном потоке
-        new Thread(new Runnable() {
-            @Override
-            public void run() {
-                // Получение всех персонажей из репозитория
-                List<CharacterModel> characters = characterRepository.getAllCharacters();
-
-                // Вывод данных в лог
-                for (CharacterModel character : characters) {
-                    Log.d(TAG, "ID: " + character.getId() +
-                            ", Name: " + character.getName() +
-                            ", Status: " + character.getStatus() +
-                            ", Species: " + character.getSpecies() +
-                            ", Image URL: " + character.getImageUrl());
-                }
-            }
-        }).start();
     }
 
     private void replaceFragment(Fragment fragment) {

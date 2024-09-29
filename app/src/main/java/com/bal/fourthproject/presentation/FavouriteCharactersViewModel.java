@@ -1,41 +1,33 @@
 package com.bal.fourthproject.presentation;
 
-import android.app.Application;
 
-import androidx.annotation.NonNull;
-import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 
 import com.bal.fourthproject.domain.CharacterModel;
-import com.bal.fourthproject.domain.GetAllCharactersUseCase;
+import com.bal.fourthproject.domain.CharacterRepository;
 
 import java.util.List;
 
-public class FavouriteCharactersViewModel extends AndroidViewModel {
+public class FavouriteCharactersViewModel extends ViewModel {
 
+    private final CharacterRepository characterRepository;
+    private final MutableLiveData<List<CharacterModel>> characters = new MutableLiveData<>();
 
-    private GetAllCharactersUseCase getAllCharactersUseCase;
-    private final MutableLiveData<List<CharacterModel>> allFavouriteCharacters = new MutableLiveData<>();
-
-
-    public LiveData<List<CharacterModel>> getCourses() {
-        return allFavouriteCharacters;
+    public FavouriteCharactersViewModel(CharacterRepository characterRepository) {
+        this.characterRepository = characterRepository;
     }
 
-
-    public FavouriteCharactersViewModel(@NonNull Application application) {
-        super(application);
-
+    public LiveData<List<CharacterModel>> getCharacters() {
+        return characters;
     }
+
     public void loadCharacters() {
+        // Получаем персонажей из репозитория в отдельном потоке
         new Thread(() -> {
-            List<CharacterModel> characterModelList = getAllCharactersUseCase.execute();
-            allFavouriteCharacters.postValue(characterModelList);
+            List<CharacterModel> characterList = characterRepository.getAllCharacters();
+            characters.postValue(characterList);
         }).start();
-    }
-
-    public void getAllCoursesViewModel(GetAllCharactersUseCase getAllCharactersUseCase) {
-        this.getAllCharactersUseCase = getAllCharactersUseCase;
     }
 }

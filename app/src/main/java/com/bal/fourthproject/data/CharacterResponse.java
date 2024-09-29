@@ -12,4 +12,5 @@ public class CharacterResponse
     public List<Character> getCharacters(){
         return characters;
     }
+
 }
