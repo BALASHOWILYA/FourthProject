@@ -19,6 +19,7 @@ import com.bal.fourthproject.data.database.CharacterRepositoryImpl;
 import com.bal.fourthproject.domain.CharacterModel;
 import com.bal.fourthproject.domain.CharacterModel;
 import com.bal.fourthproject.data.database.AppDatabase;
+import com.bal.fourthproject.domain.GetAllCharactersUseCase;
 
 import java.util.List;
 
@@ -48,9 +49,10 @@ public class FavouriteCharactersFragment extends Fragment {
         // Инициализация базы данных и репозитория
         CharacterDao characterDao = AppDatabase.getInstance(requireContext()).characterDao();
         CharacterRepositoryImpl characterRepository = new CharacterRepositoryImpl(characterDao);
+        GetAllCharactersUseCase getAllCharactersUseCase = new GetAllCharactersUseCase(characterRepository);
 
         // Инициализация ViewModel
-        viewModel = new ViewModelProvider(this, new FavouriteCharactersViewModelFactory(characterRepository)).get(FavouriteCharactersViewModel.class);
+        viewModel = new ViewModelProvider(this, new FavouriteCharactersViewModelFactory(getAllCharactersUseCase)).get(FavouriteCharactersViewModel.class);
 
         // Наблюдаем за данными
         viewModel.getCharacters().observe(getViewLifecycleOwner(), characters -> {

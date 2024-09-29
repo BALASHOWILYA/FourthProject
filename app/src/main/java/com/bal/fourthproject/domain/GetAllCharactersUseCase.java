@@ -5,7 +5,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
 public class GetAllCharactersUseCase {
-    private  CharacterRepository characterRepository;
+    private final CharacterRepository characterRepository;
 
     public GetAllCharactersUseCase(CharacterRepository characterRepository) {
         this.characterRepository = characterRepository;
