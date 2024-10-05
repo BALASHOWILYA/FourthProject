@@ -63,7 +63,6 @@ public class AllCharactersFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
         return inflater.inflate(R.layout.fragment_all_characters, container, false);
     }
 
@@ -71,11 +70,9 @@ public class AllCharactersFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Настройка RecyclerView
         recyclerView = view.findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        // Инициализация адаптера с пустым списком
         characterAdapter = new CharacterAdapter(new ArrayList<>(), characterRepository);
         recyclerView.setAdapter(characterAdapter);
     }
@@ -87,7 +84,6 @@ public class AllCharactersFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        // Отмена регистрации BroadcastReceiver
         LocalBroadcastManager.getInstance(requireActivity()).unregisterReceiver(dataReceiver);
     }
 }

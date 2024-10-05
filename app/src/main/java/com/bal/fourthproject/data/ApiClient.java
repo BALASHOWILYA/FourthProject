@@ -8,7 +8,6 @@ public class ApiClient {
     private static final String BASE_URL = "https://rickandmortyapi.com/";
     private static Retrofit retrofit;
 
-    // Метод для получения экземпляра сервиса RickAndMortyApiService
     public static RickAndMortyApiService getApiService() {
         if (retrofit == null) {
             retrofit = new Retrofit.Builder()
@@ -16,6 +15,6 @@ public class ApiClient {
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
         }
-        return retrofit.create(RickAndMortyApiService.class); // Возвращаем RickAndMortyApiService
+        return retrofit.create(RickAndMortyApiService.class);
     }
 }

@@ -47,7 +47,7 @@ public class FavouriteCharactersFragment extends Fragment {
         recyclerView.setAdapter(favouriteCharactersAdapter);
 
         // Инициализация базы данных и репозитория
-        CharacterDao characterDao = AppDatabase.getInstance(requireContext()).characterDao();
+        CharacterDao characterDao = AppDatabase.getInstance(getActivity().getApplicationContext()).characterDao();
         CharacterRepositoryImpl characterRepository = new CharacterRepositoryImpl(characterDao);
         GetAllCharactersUseCase getAllCharactersUseCase = new GetAllCharactersUseCase(characterRepository);
 
@@ -60,6 +60,7 @@ public class FavouriteCharactersFragment extends Fragment {
                 favouriteCharactersAdapter.setCharacters(characters);
             }
         });
+
 
         // Загрузка персонажей
         viewModel.loadCharacters();

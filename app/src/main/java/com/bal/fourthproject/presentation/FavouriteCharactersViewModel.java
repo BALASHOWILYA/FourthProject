@@ -25,7 +25,7 @@ public class FavouriteCharactersViewModel extends ViewModel {
     }
 
     public void loadCharacters() {
-        // Получаем персонажей из репозитория в отдельном потоке
+
         new Thread(() -> {
             List<CharacterModel> characterList = getAllCharactersUseCase.execute();
             characters.postValue(characterList);

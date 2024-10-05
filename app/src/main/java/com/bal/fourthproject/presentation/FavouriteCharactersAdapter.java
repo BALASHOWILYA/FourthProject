@@ -35,7 +35,6 @@ public class FavouriteCharactersAdapter extends RecyclerView.Adapter<FavouriteCh
         holder.statusTextView.setText(character.getStatus());
         holder.speciesTextView.setText(character.getSpecies());
 
-        // Загрузка изображения с помощью Glide
         Glide.with(holder.itemView.getContext())
                 .load(character.getImageUrl())
                 .into(holder.imageView);

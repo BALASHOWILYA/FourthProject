@@ -1,5 +1,9 @@
 package com.bal.fourthproject.data;
 
+import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Handler;
@@ -7,7 +11,10 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 
+import androidx.core.app.NotificationCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
+import com.bal.fourthproject.R;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,24 +28,42 @@ import retrofit2.Response;
 public class DataFetchService extends Service {
 
     private ExecutorService executorService;
+    private ExecutorService secondExecutorService;
     private Handler mainHandler;
     private static final String TAG = "DataFetchService";
 
     @Override
     public void onCreate() {
         super.onCreate();
+        createNotificationChannel();
         executorService = Executors.newSingleThreadExecutor();
+        secondExecutorService = Executors.newSingleThreadExecutor();
         mainHandler = new Handler(Looper.getMainLooper());
     }
+    private void createNotificationChannel() {
+        NotificationChannel channel = new NotificationChannel("channel_id",
+                "Data Fetch Service",
+                NotificationManager.IMPORTANCE_DEFAULT);
+        NotificationManager manager = getSystemService(NotificationManager.class);
+        if (manager != null) {
+            manager.createNotificationChannel(channel);
+        }
+    }
+
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        String characterName = intent.getStringExtra("name"); // получаем имя персонажа из интента
+
+
+        String characterName = intent.getStringExtra("name");
         if (characterName != null && !characterName.isEmpty()) {
-            searchCharactersByName(characterName); // поиск по имени
+            searchCharactersByName(characterName);
         } else {
-            fetchAllCharacters(); // если имя не введено, загружаем всех персонажей
+            fetchAllCharacters();
         }
+
+
+
         return START_STICKY;
     }
 
@@ -66,28 +91,32 @@ public class DataFetchService extends Service {
     }
 
     private void searchCharactersByName(String name) {
-        executorService.execute(() -> {
+        secondExecutorService.execute(()->{
             RickAndMortyApiService apiService = ApiClient.getApiService();
             Call<CharacterResponse> call = apiService.searchCharacters(name);
+
             call.enqueue(new Callback<CharacterResponse>() {
                 @Override
                 public void onResponse(Call<CharacterResponse> call, Response<CharacterResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
+
                         List<Character> characters = response.body().getCharacters();
-                        for( Character character : characters)
-                            Log.e(TAG, "Data: " + character.toString() );
                         mainHandler.post(() -> sendBroadcast(characters));
+                        for (Character character : characters) {
+                            Log.d("DataFetchService", "Character: " + character.toString());
+                        }
                     } else {
-                        Log.e(TAG, "Ошибка: " + response.code());
+                        Log.e("DataFetchService", "Ошибка: " + response.code());
                     }
                 }
 
                 @Override
                 public void onFailure(Call<CharacterResponse> call, Throwable t) {
-                    Log.e(TAG, "Ошибка загрузки данных: " + t.getMessage());
+                    Log.e("DataFetchService", "Ошибка загрузки данных: " + t.getMessage());
                 }
             });
         });
+
     }
 
     private void sendBroadcast(List<Character> characters) {
@@ -105,5 +134,6 @@ public class DataFetchService extends Service {
     public void onDestroy() {
         super.onDestroy();
         executorService.shutdown();
+        secondExecutorService.shutdown();
     }
 }

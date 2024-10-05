@@ -40,22 +40,18 @@ public class CharacterAdapter extends RecyclerView.Adapter<CharacterAdapter.Char
     public void onBindViewHolder(@NonNull CharacterViewHolder holder, int position) {
         Character character = characterList.get(position);
 
-        // Устанавливаем данные персонажа
         holder.characterIdTextView.setText("Id: " + character.getId());
         holder.characterNameTextView.setText("Name: " + character.getName());
         holder.characterStatusTextView.setText("Status: " + character.getStatus());
         holder.characterSpeciesTextView.setText("Species: " + character.getSpecies());
 
-        // Загрузка изображения персонажа
         Glide.with(holder.itemView.getContext())
                 .load(character.getImageUrl())
                 .into(holder.characterImageView);
 
-        // Обработка нажатия на кнопку "add character"
         holder.addButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Преобразуем объект Character в CharacterModel для domain слоя
                 CharacterModel characterModel = new CharacterModel(
                         character.getId(),
                         character.getName(),
@@ -64,15 +60,13 @@ public class CharacterAdapter extends RecyclerView.Adapter<CharacterAdapter.Char
                         character.getImageUrl()
                 );
 
-                // Добавляем персонажа через репозиторий
                 characterRepository.addCharacter(characterModel);
             }
         });
     }
-    // Метод для обновления списка персонажей
     public void setCharacters(List<Character> newCharacterList) {
         this.characterList = newCharacterList;
-        notifyDataSetChanged();  // Обновляем данные в адаптере
+        notifyDataSetChanged();
     }
 
     @Override
