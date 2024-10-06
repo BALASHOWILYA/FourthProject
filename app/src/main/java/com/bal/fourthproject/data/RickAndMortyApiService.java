@@ -11,9 +11,15 @@ public interface RickAndMortyApiService {
     Call<CharacterResponse> getCharacters();
 
     @GET("api/character")
-    Call<CharacterResponse> searchCharacters(@Query("name") String name);
+    Call<CharacterResponse> searchCharacters(@Query("name") String name,
+                                             @Query("gender") String gender,
+                                             @Query("species") String species,
+                                             @Query("origin") String origin
+                                             );
 
     @GET("api/episode/{id}")
     Call<Episode> getEpisodeById(@Path("id") int id);
+
+
 
 }

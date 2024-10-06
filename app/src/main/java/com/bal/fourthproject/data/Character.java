@@ -22,6 +22,22 @@ public class Character implements Parcelable {
     @SerializedName("species")
     private String species;
 
+    public Character(int id, String name, String status, String species, String gender, String imageUrl) {
+        this.id = id;
+        this.name = name;
+        this.status = status;
+        this.species = species;
+        this.gender = gender;
+        this.imageUrl = imageUrl;
+    }
+
+    @SerializedName("gender")
+    private String gender;
+
+    public String getGender() {
+        return gender;
+    }
+
     @SerializedName("image")
     private String imageUrl;
 
@@ -30,6 +46,7 @@ public class Character implements Parcelable {
         name = in.readString();
         status = in.readString();
         species = in.readString();
+        gender = in.readString();
         imageUrl = in.readString();
     }
 
@@ -39,6 +56,7 @@ public class Character implements Parcelable {
         dest.writeString(name);
         dest.writeString(status);
         dest.writeString(species);
+        dest.writeString(gender);
         dest.writeString(imageUrl);
     }
 
@@ -88,6 +106,7 @@ public class Character implements Parcelable {
                 ", status='" + status + '\'' +
                 ", species='" + species + '\'' +
                 ", imageUrl='" + imageUrl + '\'' +
+                ", gender='" + gender + '\'' +
                 '}';
     }
 }

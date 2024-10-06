@@ -56,8 +56,13 @@ public class DataFetchService extends Service {
 
 
         String characterName = intent.getStringExtra("name");
-        if (characterName != null && !characterName.isEmpty()) {
-            searchCharactersByName(characterName);
+        String characterGender = intent.getStringExtra("gender");
+        String characterOrigin = intent.getStringExtra("origin");
+        String characterSpecies = intent.getStringExtra("species");
+        Log.d("MData", characterGender + characterName + characterSpecies + characterOrigin);
+        if (characterName != null && !characterName.isEmpty() || characterGender != null && !characterGender.isEmpty() || characterOrigin != null && !characterOrigin.isEmpty() || characterSpecies != null && !characterSpecies.isEmpty()) {
+            searchCharactersByName(characterName, characterGender, characterOrigin, characterSpecies);
+
         } else {
             fetchAllCharacters();
         }
@@ -90,10 +95,10 @@ public class DataFetchService extends Service {
         });
     }
 
-    private void searchCharactersByName(String name) {
+    private void searchCharactersByName(String name, String gender, String origin, String species) {
         secondExecutorService.execute(()->{
             RickAndMortyApiService apiService = ApiClient.getApiService();
-            Call<CharacterResponse> call = apiService.searchCharacters(name);
+            Call<CharacterResponse> call = apiService.searchCharacters(name, gender, species, origin);
 
             call.enqueue(new Callback<CharacterResponse>() {
                 @Override

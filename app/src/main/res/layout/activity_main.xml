@@ -22,6 +22,31 @@
             android:inputType="textPersonName"
             android:padding="8dp"
             android:textSize="32sp" />
+        <EditText
+            android:id="@+id/search_gender"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Введите пол"
+            android:inputType="textPersonName"
+            android:padding="8dp"
+            android:textSize="32sp" />
+        <EditText
+            android:id="@+id/search_species"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Введите расу"
+            android:inputType="textPersonName"
+            android:padding="8dp"
+            android:textSize="32sp" />
+
+        <EditText
+            android:id="@+id/search_origin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Введите планету"
+            android:inputType="textPersonName"
+            android:padding="8dp"
+            android:textSize="32sp" />
 
         <Button
             android:id="@+id/search_button"
@@ -31,6 +56,8 @@
             android:text="Поиск"
             android:padding="8dp"
             android:textSize="16sp" />
+
+
 
     </LinearLayout>
 

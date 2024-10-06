@@ -15,43 +15,25 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
-import com.bal.fourthproject.data.Character;
 import com.bal.fourthproject.data.DataFetchService;
 import com.bal.fourthproject.R;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.os.Bundle;
 import android.widget.Button;
 import android.widget.EditText;
 
 
 import com.bal.fourthproject.data.Episode;
 import com.bal.fourthproject.data.EpisodeFetchService;
-import com.bal.fourthproject.data.database.AppDatabase;
-import com.bal.fourthproject.data.Character;
-import com.bal.fourthproject.data.database.CharacterDao;
-import com.bal.fourthproject.domain.CharacterModel;
-import com.bal.fourthproject.domain.CharacterRepository;
-import com.bal.fourthproject.data.database.CharacterRepositoryImpl;
-import com.bal.fourthproject.data.DataFetchService;
-import com.bal.fourthproject.R;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private FavouriteCharactersFragment favouriteCharactersFragment = new FavouriteCharactersFragment();
     private AllCharactersFragment allCharactersFragment = new AllCharactersFragment();
-    private EditText searchNameEditText, indexEpisode;
-    private Button searchButton, searchEpisodeButton;
+    private EditText indexEpisode;
+    private EditText search_gender, search_origin, search_species, search_name;
+    private Button searchButton, searchEpisodeButton, filterCharacters;
 
     private BroadcastReceiver episodeReceiver = new BroadcastReceiver() {
         @Override
@@ -74,7 +56,10 @@ public class MainActivity extends AppCompatActivity {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
-        searchNameEditText = findViewById(R.id.search_name);
+        search_name = findViewById(R.id.search_name);
+        search_gender = findViewById(R.id.search_gender);
+        search_origin = findViewById(R.id.search_origin);
+        search_species = findViewById(R.id.search_species);
         indexEpisode = findViewById(R.id.index_episode);
         searchEpisodeButton = findViewById(R.id.search_episode_button);
         searchButton = findViewById(R.id.search_button);
@@ -89,9 +74,13 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, DataFetchService.class);
         startService(intent);
 
-        searchEpisodeButton.setOnClickListener(v->{
-            String id = indexEpisode.getText().toString();
 
+
+
+
+        searchEpisodeButton.setOnClickListener(v->{
+            String idString = indexEpisode.getText().toString();
+            int id = Integer.parseInt(idString);
 
 
 
@@ -102,8 +91,12 @@ public class MainActivity extends AppCompatActivity {
 
 
         searchButton.setOnClickListener(v -> {
-            String name = searchNameEditText.getText().toString();
-            performSearch(name);
+
+            String name = search_name.getText().toString();
+            String gender = search_gender.getText().toString();
+            String species = search_species.getText().toString();
+            String origin = search_origin.getText().toString();
+            performSearch(name, gender, origin, species);
         });
     }
 
@@ -117,12 +110,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void performSearch(String name) {
+    private void performSearch(String name, String gender, String origin, String species) {
         try {
-            if (!TextUtils.isEmpty(name)) {
+            if (!TextUtils.isEmpty(name) || !TextUtils.isEmpty(gender) || !TextUtils.isEmpty(origin) || !TextUtils.isEmpty(species)) {
                 Context context = getApplicationContext();
                 Intent intent = new Intent(context, DataFetchService.class);
-                intent.putExtra("name", name);
+                if(!TextUtils.isEmpty(name))
+                    intent.putExtra("name", name);
+                if(!TextUtils.isEmpty(gender))
+                    intent.putExtra("gender", gender);
+                if(!TextUtils.isEmpty(origin))
+                    intent.putExtra("origin", origin);
+                if(!TextUtils.isEmpty(species))
+                    intent.putExtra("species", species);
                 context.startService(intent);
             } else {
                 Log.e(TAG, "Search name is empty");

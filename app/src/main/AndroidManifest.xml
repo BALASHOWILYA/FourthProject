@@ -15,11 +15,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FourthProject"
         tools:targetApi="31">
-
         <service
             android:name=".data.EpisodeFetchService"
-            android:exported="false"/>
-
+            android:exported="false" />
         <service
             android:name=".data.DataFetchService"
             android:exported="false" />
