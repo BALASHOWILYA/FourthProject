@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "385355566192",
+    "project_id": "fourthproject-bc686",
+    "storage_bucket": "fourthproject-bc686.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:385355566192:android:72a60fce4bd093d6c178b5",
+        "android_client_info": {
+          "package_name": "com.bal.fourthproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBg-HIyzky8DkF19A694zNt4v0Ln2FnAF0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
