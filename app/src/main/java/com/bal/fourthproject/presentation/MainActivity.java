@@ -51,6 +51,8 @@ import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.Objects;
 
@@ -58,52 +60,21 @@ public class MainActivity extends AppCompatActivity {
 
     private static final String TAG = "MainActivity";
     private FavouriteCharactersFragment favouriteCharactersFragment = new FavouriteCharactersFragment();
+    private SearchCharactersFragment searchCharactersFragment = new SearchCharactersFragment();
+    private QuotesFragment quotesFragment = new QuotesFragment();
+    private AddQuateFragment addQuateFragment = new AddQuateFragment();
+    private AuthFragment authFragment = new AuthFragment();
     private AllCharactersFragment allCharactersFragment = new AllCharactersFragment();
     private EditText indexEpisode;
-    private EditText search_gender, search_origin, search_species, search_name;
-    private Button searchButton, searchEpisodeButton, filterCharacters;
-    private ShapeableImageView imageView;
+    private Button  searchEpisodeButton, filterCharacters;
 
-    FirebaseAuth auth;
+
+
     
-    TextView name, mail;
 
 
-    private final ActivityResultLauncher<Intent> activityResultLauncher=
-            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), new ActivityResultCallback<ActivityResult>() {
-                @Override
-                public void onActivityResult(ActivityResult result) {
-                    if (result.getResultCode() == RESULT_OK){
-                        Task<GoogleSignInAccount> accountTask = GoogleSignIn.getSignedInAccountFromIntent(result.getData());
-                        try {
-                            GoogleSignInAccount signInAccount = accountTask.getResult(ApiException.class);
 
-                            AuthCredential authCredential = GoogleAuthProvider.getCredential(signInAccount.getIdToken(), null);
 
-                            auth.signInWithCredential(authCredential).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                                @Override
-                                public void onComplete(@NonNull Task<AuthResult> task) {
-                                    if(task.isSuccessful()){
-                                        auth = FirebaseAuth.getInstance();
-
-                                        Glide.with(MainActivity.this).load(Objects.requireNonNull(auth.getCurrentUser()).getPhotoUrl()).into(imageView);
-                                        name.setText(auth.getCurrentUser().getDisplayName());
-                                        mail.setText(auth.getCurrentUser().getEmail());
-
-                                        makeText(MainActivity.this, "Signed in successfully!", Toast.LENGTH_LONG).show();
-                                    }
-                                    else{
-                                        makeText(MainActivity.this, "Signed in failed!", Toast.LENGTH_LONG).show();
-                                    }
-                                }
-                            });
-
-                        } catch (ApiException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                }
-            });
 
 
 
@@ -129,67 +100,10 @@ public class MainActivity extends AppCompatActivity {
             return insets;
         });
 
-        imageView = findViewById(R.id.imageView);
-        name = findViewById(R.id.nameTV);
-        mail = findViewById(R.id.emailTV);
-
-
-
-
-
         if (savedInstanceState == null) {
-            addFragment(allCharactersFragment, R.id.second_fragment_container);
+            addFragment(addQuateFragment, R.id.first_fragment_container);
         }
-
-
-
-
-        GoogleSignInOptions options = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-                .requestIdToken(getString(R.string.client_id))
-                .requestEmail()
-                .build();
-
-
-        GoogleSignInClient googleSignInClient = GoogleSignIn.getClient(MainActivity.this, options);
-        auth = FirebaseAuth.getInstance();
-
-        SignInButton signInButton = findViewById(R.id.SignIn);
-        signInButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = googleSignInClient.getSignInIntent();
-                activityResultLauncher.launch(intent);
-            }
-        });
-
-        MaterialButton signOut = findViewById(R.id.SignOut);
-        signOut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                FirebaseAuth.getInstance().addAuthStateListener(new FirebaseAuth.AuthStateListener() {
-                    @Override
-                    public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                        if (firebaseAuth.getCurrentUser() == null) {
-                            googleSignInClient.signOut().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void unused) {
-                                    makeText(MainActivity.this, "Signed out successfully", Toast.LENGTH_LONG).show();
-                                    startActivity(new Intent(MainActivity.this, MainActivity.class));
-                                }
-                            });
-                        }
-                    }
-                });
-
-                FirebaseAuth.getInstance().signOut();
-            }
-        });
-
-        if (auth.getCurrentUser() != null) {
-            Glide.with(MainActivity.this).load(Objects.requireNonNull(auth.getCurrentUser().getDisplayName())).into(imageView);
-            name.setText(auth.getCurrentUser().getDisplayName());
-            mail.setText(auth.getCurrentUser().getEmail());
-        }
+        services();
 
 
 
@@ -197,72 +111,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void services(){
 
-        search_name = findViewById(R.id.search_name);
-        search_gender = findViewById(R.id.search_gender);
-        search_origin = findViewById(R.id.search_origin);
-        search_species = findViewById(R.id.search_species);
-        indexEpisode = findViewById(R.id.index_episode);
-        searchEpisodeButton = findViewById(R.id.search_episode_button);
-        searchButton = findViewById(R.id.search_button);
-
-
-        searchEpisodeButton.setOnClickListener(v -> {
-            String idString = indexEpisode.getText().toString();
-            int id = Integer.parseInt(idString);
-
-
-            Intent secondIntent = new Intent(this, EpisodeFetchService.class);
-            secondIntent.putExtra("episode_id", id);
-            startService(secondIntent);
-        });
-
-
-        searchButton.setOnClickListener(v -> {
-
-            String name = search_name.getText().toString();
-            String gender = search_gender.getText().toString();
-            String species = search_species.getText().toString();
-            String origin = search_origin.getText().toString();
-            performSearch(name, gender, origin, species);
-        });
-
-
-        search_name = findViewById(R.id.search_name);
-        search_gender = findViewById(R.id.search_gender);
-        search_origin = findViewById(R.id.search_origin);
-        search_species = findViewById(R.id.search_species);
-        indexEpisode = findViewById(R.id.index_episode);
-        searchEpisodeButton = findViewById(R.id.search_episode_button);
-        searchButton = findViewById(R.id.search_button);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(episodeReceiver, new IntentFilter("com.bal.fourthproject.EPISODE_UPDATED"));
 
 
         Intent intent = new Intent(this, DataFetchService.class);
         startService(intent);
-
-
-        searchEpisodeButton.setOnClickListener(v -> {
-            String idString = indexEpisode.getText().toString();
-            int id = Integer.parseInt(idString);
-
-
-            Intent secondIntent = new Intent(this, EpisodeFetchService.class);
-            secondIntent.putExtra("episode_id", id);
-            startService(secondIntent);
-        });
-
-
-        searchButton.setOnClickListener(v -> {
-
-            String name = search_name.getText().toString();
-            String gender = search_gender.getText().toString();
-            String species = search_species.getText().toString();
-            String origin = search_origin.getText().toString();
-            performSearch(name, gender, origin, species);
-        });
-
-
 
     }
 
@@ -276,27 +130,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void performSearch(String name, String gender, String origin, String species) {
-        try {
-            if (!TextUtils.isEmpty(name) || !TextUtils.isEmpty(gender) || !TextUtils.isEmpty(origin) || !TextUtils.isEmpty(species)) {
-                Context context = getApplicationContext();
-                Intent intent = new Intent(context, DataFetchService.class);
-                if(!TextUtils.isEmpty(name))
-                    intent.putExtra("name", name);
-                if(!TextUtils.isEmpty(gender))
-                    intent.putExtra("gender", gender);
-                if(!TextUtils.isEmpty(origin))
-                    intent.putExtra("origin", origin);
-                if(!TextUtils.isEmpty(species))
-                    intent.putExtra("species", species);
-                context.startService(intent);
-            } else {
-                Log.e(TAG, "Search name is empty");
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Error during search", e);
-        }
-    }
+
 
     @Override
     protected void onDestroy() {

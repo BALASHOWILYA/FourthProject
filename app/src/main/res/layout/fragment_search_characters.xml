@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".presentation.SearchCharactersFragment">
+
+
+    <EditText
+        android:id="@+id/search_name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Введите имя персонажа"
+        android:inputType="textPersonName"
+        android:padding="8dp"
+        android:textSize="32sp" />
+    <EditText
+        android:id="@+id/search_gender"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Введите пол"
+        android:inputType="textPersonName"
+        android:padding="8dp"
+        android:textSize="32sp" />
+    <EditText
+        android:id="@+id/search_species"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Введите расу"
+        android:inputType="textPersonName"
+        android:padding="8dp"
+        android:textSize="32sp" />
+
+    <EditText
+        android:id="@+id/search_origin"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Введите планету"
+        android:inputType="textPersonName"
+        android:padding="8dp"
+        android:textSize="32sp" />
+
+    <Button
+        android:id="@+id/search_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:text="Поиск"
+        android:padding="8dp"
+        android:textSize="16sp" />
+
+
+</LinearLayout>

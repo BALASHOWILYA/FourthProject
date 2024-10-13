@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".presentation.AddQuateFragment">
+
+
+    <EditText
+        android:id="@+id/quote_id"
+        android:layout_width="match_parent"
+        android:layout_height="200dp"
+        android:hint="Quote text goes here"
+        android:ems="10"
+        android:inputType="textMultiLine"
+        android:maxLength="1000"
+        android:gravity="start" />
+
+    <EditText
+        android:id="@+id/author_id"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="30dp"
+        android:hint="Author"
+        android:ems="10"
+        android:gravity="start" />
+
+    <Button
+        android:id="@+id/addQuoteButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="add quota"/>
+
+
+</LinearLayout>
