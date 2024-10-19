@@ -16,6 +16,12 @@
         android:theme="@style/Theme.FourthProject"
         tools:targetApi="31">
         <service
+            android:name=".data.FirebaseAddQuoteService"
+            android:exported="false"/>
+        <service
+            android:name=".data.FirebaseService"
+            android:exported="false" />
+        <service
             android:name=".data.EpisodeFetchService"
             android:exported="false" />
         <service

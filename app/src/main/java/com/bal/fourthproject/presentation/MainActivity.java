@@ -70,14 +70,6 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-    
-
-
-
-
-
-
-
     private BroadcastReceiver episodeReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -101,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         if (savedInstanceState == null) {
-            addFragment(addQuateFragment, R.id.first_fragment_container);
+            addFragment(quotesFragment, R.id.first_fragment_container);
         }
         services();
 
