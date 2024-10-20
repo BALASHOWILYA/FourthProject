@@ -16,6 +16,8 @@ import android.widget.Toast;
 
 import com.bal.fourthproject.R;
 import com.bal.fourthproject.data.FirebaseAddQuoteService;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class AddQuateFragment extends Fragment {
 
@@ -48,17 +50,26 @@ public class AddQuateFragment extends Fragment {
                 return;
             }
 
-            // Запуск сервиса для добавления данных в Firebase
-            Intent serviceIntent = new Intent(requireContext(), FirebaseAddQuoteService.class);
-            serviceIntent.setAction(FirebaseAddQuoteService.ACTION_ADD_QUOTE);
-            serviceIntent.putExtra(FirebaseAddQuoteService.EXTRA_QUOTE, quote);
-            serviceIntent.putExtra(FirebaseAddQuoteService.EXTRA_AUTHOR, author);
-            requireContext().startService(serviceIntent);
+            // Получаем текущего пользователя из Firebase
+            FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
+            if (currentUser != null) {
+                String authorId = currentUser.getUid(); // Уникальный ID пользователя
 
-            queteEditText.getText().clear();
-            authorEditText.getText().clear();
+                // Запуск сервиса для добавления данных в Firebase
+                Intent serviceIntent = new Intent(requireContext(), FirebaseAddQuoteService.class);
+                serviceIntent.setAction(FirebaseAddQuoteService.ACTION_ADD_QUOTE);
+                serviceIntent.putExtra(FirebaseAddQuoteService.EXTRA_QUOTE, quote);
+                serviceIntent.putExtra(FirebaseAddQuoteService.EXTRA_AUTHOR, author);
+                serviceIntent.putExtra(FirebaseAddQuoteService.EXTRA_AUTHOR_ID, authorId); // Передаем authorId
+                requireContext().startService(serviceIntent);
 
-            switchToQuotesFragment();
+                queteEditText.getText().clear();
+                authorEditText.getText().clear();
+
+                switchToQuotesFragment();
+            } else {
+                Toast.makeText(getContext(), "Ошибка: пользователь не авторизован", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 

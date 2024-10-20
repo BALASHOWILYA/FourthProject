@@ -22,6 +22,10 @@ public class FirebaseService extends Service {
 
     public static final String ACTION_FETCH_QUOTES = "com.bal.fourthproject.FETCH_QUOTES";
     public static final String QUOTES_EXTRA = "quotes_extra";
+    public static final String ACTION_DELETE_QUOTE = "com.bal.fourthproject.DELETE_QUOTE";
+    public static final String QUOTE_KEY_EXTRA = "quote_key_extra";
+    public static final String ACTION_DELETE_RESULT = "com.bal.fourthproject.DELETE_RESULT";
+
 
     private ExecutorService executorService;
     private Handler mainHander;
@@ -30,13 +34,23 @@ public class FirebaseService extends Service {
     public void onCreate() {
         super.onCreate();
 
-        executorService = Executors.newSingleThreadExecutor();
+        executorService = Executors.newFixedThreadPool(2);
         mainHander = new Handler(Looper.getMainLooper());
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        executorService.execute(this::loadQuotesFromFirebase);
+        if (intent != null && ACTION_DELETE_QUOTE.equals(intent.getAction())) {
+            String quoteKey = intent.getStringExtra(QUOTE_KEY_EXTRA);
+            if (quoteKey != null) {
+                executorService.execute(()->{
+                    deleteQuoteFromFirebase(quoteKey);
+                });
+
+            }
+        } else {
+            executorService.execute(this::loadQuotesFromFirebase);
+        }
         return START_STICKY;
     }
 
@@ -74,6 +88,18 @@ public class FirebaseService extends Service {
         intent.putExtra(QUOTES_EXTRA, (ArrayList<Map<String, String>>) quotesList);
         sendBroadcast(intent);
     }
+
+    private void deleteQuoteFromFirebase(String quoteKey) {
+        DatabaseReference quotesRef = FirebaseDatabase.getInstance().getReference("quotes").child(quoteKey);
+        quotesRef.removeValue().addOnCompleteListener(task -> {
+            mainHander.post(() -> {
+                Intent intent = new Intent(ACTION_DELETE_RESULT);
+                intent.putExtra("isDeleted", task.isSuccessful());
+                sendBroadcast(intent);
+            });
+        });
+    }
+
 
     @Override
     public IBinder onBind(Intent intent) {

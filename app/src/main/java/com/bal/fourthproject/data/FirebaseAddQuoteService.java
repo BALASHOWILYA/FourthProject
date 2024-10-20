@@ -21,6 +21,7 @@ public class FirebaseAddQuoteService extends Service {
     public static final String ACTION_ADD_QUOTE = "com.bal.fourthproject.ADD_QUOTE";
     public static final String EXTRA_QUOTE = "extra_quote";
     public static final String EXTRA_AUTHOR = "extra_author";
+    public static final String EXTRA_AUTHOR_ID = "extra_author_id";  // Новый параметр для authorId
 
     private ExecutorService executorService;
 
@@ -30,16 +31,16 @@ public class FirebaseAddQuoteService extends Service {
         executorService = Executors.newSingleThreadExecutor();
     }
 
-
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         if (ACTION_ADD_QUOTE.equals(intent.getAction())) {
             String quote = intent.getStringExtra(EXTRA_QUOTE);
             String author = intent.getStringExtra(EXTRA_AUTHOR);
+            String authorId = intent.getStringExtra(EXTRA_AUTHOR_ID);  // Получаем authorId
 
-            if (quote != null && author != null) {
-                executorService.execute(()->{
-                    addQuoteToDB(quote, author);
+            if (quote != null && author != null && authorId != null) {
+                executorService.execute(() -> {
+                    addQuoteToDB(quote, author, authorId);  // Передаём authorId
                 });
             } else {
                 Toast.makeText(this, "Данные не переданы", Toast.LENGTH_SHORT).show();
@@ -48,10 +49,11 @@ public class FirebaseAddQuoteService extends Service {
         return START_NOT_STICKY;
     }
 
-    private void addQuoteToDB(String quote, String author) {
+    private void addQuoteToDB(String quote, String author, String authorId) {
         HashMap<String, Object> quoteHashMap = new HashMap<>();
         quoteHashMap.put("quote", quote);
         quoteHashMap.put("author", author);
+        quoteHashMap.put("authorId", authorId);  // Добавляем authorId в базу данных
 
         FirebaseDatabase database = FirebaseDatabase.getInstance();
         DatabaseReference quotesRef = database.getReference("quotes");

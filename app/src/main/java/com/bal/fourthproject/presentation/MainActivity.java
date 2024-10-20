@@ -93,7 +93,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         if (savedInstanceState == null) {
-            addFragment(quotesFragment, R.id.first_fragment_container);
+            addFragment(authFragment, R.id.first_fragment_container);
         }
         services();
 

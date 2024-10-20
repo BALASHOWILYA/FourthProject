@@ -18,10 +18,12 @@ public class QuotesAdapter extends RecyclerView.Adapter<QuotesAdapter.QuoteViewH
 
     private List<Map<String, String>> quotesList;
     private QuotesAdapter.OnDeleteClickListener onDeleteClickListener;
+    private String currentUserId; // Используем ID текущего пользователя
 
-    public QuotesAdapter(List<Map<String, String>> quotesList, QuotesAdapter.OnDeleteClickListener onDeleteClickListener) {
+    public QuotesAdapter(List<Map<String, String>> quotesList, String currentUserId, QuotesAdapter.OnDeleteClickListener onDeleteClickListener) {
         this.quotesList = quotesList;
         this.onDeleteClickListener = onDeleteClickListener;
+        this.currentUserId = currentUserId;
     }
 
     @NonNull
@@ -36,6 +38,15 @@ public class QuotesAdapter extends RecyclerView.Adapter<QuotesAdapter.QuoteViewH
         Map<String, String> quoteData = quotesList.get(position);
         holder.quoteTextView.setText(quoteData.get("quote"));
         holder.authorTextView.setText(quoteData.get("author"));
+
+        String authorId = quoteData.get("authorId"); // Получаем authorId
+
+        // Если текущий пользователь является автором цитаты, показываем кнопку удаления
+        if (currentUserId.equals(authorId)) {
+            holder.deleteButton.setVisibility(View.VISIBLE);
+        } else {
+            holder.deleteButton.setVisibility(View.GONE); // Скрываем кнопку для остальных
+        }
 
         holder.deleteButton.setOnClickListener(v -> {
             if (onDeleteClickListener != null) {
@@ -67,4 +78,6 @@ public class QuotesAdapter extends RecyclerView.Adapter<QuotesAdapter.QuoteViewH
     public interface OnDeleteClickListener {
         void onDeleteClick(int position);
     }
+
+    //public interface OnUpdateClickListener
 }

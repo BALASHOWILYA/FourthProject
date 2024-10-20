@@ -19,23 +19,23 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import com.bal.fourthproject.R;
-
 import com.bal.fourthproject.data.FirebaseService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class QuotesFragment extends Fragment implements QuotesAdapter.OnDeleteClickListener{
+public class QuotesFragment extends Fragment implements QuotesAdapter.OnDeleteClickListener {
 
     private FloatingActionButton floatingActionButton;
     private AddQuateFragment addQuateFragment = new AddQuateFragment();
     private RecyclerView quotesRecyclerView;
     private QuotesAdapter quotesAdapter;
     private List<Map<String, String>> quotesList = new ArrayList<>();
+    private String autherId;  // UID пользователя
 
     private BroadcastReceiver quotesReceiver = new BroadcastReceiver() {
         @SuppressLint("NotifyDataSetChanged")
@@ -60,7 +60,20 @@ public class QuotesFragment extends Fragment implements QuotesAdapter.OnDeleteCl
                 }
             }
         }
+    };
 
+    private BroadcastReceiver deleteReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (FirebaseService.ACTION_DELETE_RESULT.equals(intent.getAction())) {
+                boolean isSuccess = intent.getBooleanExtra("isDeleted", false);
+                if (isSuccess) {
+                    Toast.makeText(context, "Цитата успешно удалена", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(context, "Ошибка при удалении цитаты", Toast.LENGTH_SHORT).show();
+                }
+            }
+        }
     };
 
     @Override
@@ -71,10 +84,20 @@ public class QuotesFragment extends Fragment implements QuotesAdapter.OnDeleteCl
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        // Получение UID текущего пользователя
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user != null) {
+            autherId = user.getUid();
+        } else {
+            Toast.makeText(requireContext(), "Пользователь не авторизован", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         floatingActionButton = view.findViewById(R.id.floatingButton);
         quotesRecyclerView = view.findViewById(R.id.quotesRecyclerView);
         quotesRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-        quotesAdapter = new QuotesAdapter(quotesList, this);
+        quotesAdapter = new QuotesAdapter(quotesList, autherId, this);  // Передача UID в адаптер
         quotesRecyclerView.setAdapter(quotesAdapter);
 
         floatingActionButton.setOnClickListener(v -> {
@@ -101,33 +124,32 @@ public class QuotesFragment extends Fragment implements QuotesAdapter.OnDeleteCl
     @Override
     public void onResume() {
         super.onResume();
-        IntentFilter filter = new IntentFilter(FirebaseService.ACTION_FETCH_QUOTES);
-        requireContext().registerReceiver(quotesReceiver, filter, Context.RECEIVER_EXPORTED);
+        IntentFilter quotesFilter = new IntentFilter(FirebaseService.ACTION_FETCH_QUOTES);
+        requireContext().registerReceiver(quotesReceiver, quotesFilter, Context.RECEIVER_EXPORTED);
+
+        IntentFilter deleteFilter = new IntentFilter(FirebaseService.ACTION_DELETE_RESULT);
+        requireContext().registerReceiver(deleteReceiver, deleteFilter, Context.RECEIVER_EXPORTED);
     }
 
     @Override
     public void onPause() {
         super.onPause();
         requireContext().unregisterReceiver(quotesReceiver);
+        requireContext().unregisterReceiver(deleteReceiver);
     }
 
     @Override
     public void onDeleteClick(int position) {
-        deleteQuoteFromFirebase(position);
+        String key = quotesList.get(position).get("key");
+        deleteQuoteUsingService(key);
+        quotesList.remove(position);
+        quotesAdapter.notifyItemRemoved(position);
     }
 
-    private void deleteQuoteFromFirebase(int position) {
-        DatabaseReference quotesRef = FirebaseDatabase.getInstance().getReference("quotes");
-        String key = quotesList.get(position).get("key");
-
-        quotesRef.child(key).removeValue().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                quotesList.remove(position);
-                quotesAdapter.notifyItemRemoved(position);
-                Toast.makeText(requireContext(), "Цитата удалена", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(requireContext(), "Не удалось удалить цитату", Toast.LENGTH_SHORT).show();
-            }
-        });
+    private void deleteQuoteUsingService(String key) {
+        Intent intent = new Intent(requireContext(), FirebaseService.class);
+        intent.setAction(FirebaseService.ACTION_DELETE_QUOTE);
+        intent.putExtra(FirebaseService.QUOTE_KEY_EXTRA, key);
+        requireContext().startService(intent);
     }
 }
