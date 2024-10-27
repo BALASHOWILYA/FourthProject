@@ -38,6 +38,7 @@ public class CharacterRepositoryImpl implements CharacterRepository {
     @Override
     public List<CharacterModel> getAllCharacters() {
         // Используем Callable для асинхронного выполнения получения данных из БД
+
         Callable<List<CharacterEntity>> task = characterDao::getAllCharacters;
         Future<List<CharacterEntity>> future = executorService.submit(task);
 

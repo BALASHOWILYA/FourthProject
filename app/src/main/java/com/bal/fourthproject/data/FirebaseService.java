@@ -15,8 +15,11 @@ import com.google.firebase.database.ValueEventListener;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class FirebaseService extends Service {
 
@@ -25,6 +28,12 @@ public class FirebaseService extends Service {
     public static final String ACTION_DELETE_QUOTE = "com.bal.fourthproject.DELETE_QUOTE";
     public static final String QUOTE_KEY_EXTRA = "quote_key_extra";
     public static final String ACTION_DELETE_RESULT = "com.bal.fourthproject.DELETE_RESULT";
+    public static final String ACTION_UPDATE_QUOTE = "com.bal.fourthproject.ACTION_UPDATE_QUOTE";
+    public static final String ACTION_UPDATE_RESULT = "com.bal.fourthproject.ACTION_UPDATE_RESULT";
+    public static final String QUOTE_UPDATE_KEY_EXTRA = "quote_update_key";
+    public static final String QUOTE_UPDATE_DATA_EXTRA = "quote_update_data";
+    private DatabaseReference quotesDatabase;
+
 
 
     private ExecutorService executorService;
@@ -33,8 +42,16 @@ public class FirebaseService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
+        quotesDatabase = FirebaseDatabase.getInstance().getReference("quotes");  // Путь к коллекции цитат
+        executorService = new ThreadPoolExecutor(
+                3, // core pool size
+                5, // maximum pool size
+                60L, // keep-alive time
+                TimeUnit.SECONDS,
+                new ArrayBlockingQueue<>(10), // Bounded queue with a capacity of 10 tasks
+                new ThreadPoolExecutor.DiscardOldestPolicy() // Discards oldest task if queue is full
+        );
 
-        executorService = Executors.newFixedThreadPool(2);
         mainHander = new Handler(Looper.getMainLooper());
     }
 
@@ -43,21 +60,68 @@ public class FirebaseService extends Service {
         if (intent != null && ACTION_DELETE_QUOTE.equals(intent.getAction())) {
             String quoteKey = intent.getStringExtra(QUOTE_KEY_EXTRA);
             if (quoteKey != null) {
-                executorService.execute(()->{
-                    deleteQuoteFromFirebase(quoteKey);
-                });
+                try {
+                    executorService.execute(()->{
+                        deleteQuoteFromFirebase(quoteKey);
+                    });
+
+                } catch (OutOfMemoryError e){
+                    executorService.shutdown();
+
+                }
 
             }
-        } else {
-            executorService.execute(this::loadQuotesFromFirebase);
+        }
+        else if(intent != null && ACTION_UPDATE_QUOTE.equals(intent.getAction()))
+        {
+            try {
+                executorService.execute(()->{
+                    String key = intent.getStringExtra(QUOTE_UPDATE_KEY_EXTRA);
+                    Map<String, Object> updatedData = (Map<String, Object>) intent.getSerializableExtra(QUOTE_UPDATE_DATA_EXTRA);
+
+                    if (key != null && updatedData != null) {
+                        updateQuote(key, updatedData);
+                    }
+                });
+            } catch (OutOfMemoryError e){
+                executorService.shutdown();
+            }
+
+
+
+        }
+        else {
+            try{
+
+                executorService.execute(this::loadQuotesFromFirebase);
+            }
+            catch (OutOfMemoryError e){
+                executorService.shutdown();
+
+            }
         }
         return START_STICKY;
     }
 
-    private void loadQuotesFromFirebase() {
-        DatabaseReference quotesRef = FirebaseDatabase.getInstance().getReference("quotes");
+    private void updateQuote(String key, Map<String, Object> updatedData) {
+        quotesDatabase.child(key).updateChildren(updatedData)
+                .addOnSuccessListener(aVoid -> {
+                    sendUpdateResultBroadcast(true);
+                })
+                .addOnFailureListener(e -> {
+                    sendUpdateResultBroadcast(false);
+                });
+    }
 
-        quotesRef.addListenerForSingleValueEvent(new ValueEventListener() {
+    private void sendUpdateResultBroadcast(boolean isUpdated) {
+        Intent resultIntent = new Intent(ACTION_UPDATE_RESULT);
+        resultIntent.putExtra("isUpdated", isUpdated);
+        sendBroadcast(resultIntent);
+    }
+
+    private void loadQuotesFromFirebase() {
+
+        quotesDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<Map<String, String>> quotesList = new ArrayList<>();
@@ -90,7 +154,7 @@ public class FirebaseService extends Service {
     }
 
     private void deleteQuoteFromFirebase(String quoteKey) {
-        DatabaseReference quotesRef = FirebaseDatabase.getInstance().getReference("quotes").child(quoteKey);
+        DatabaseReference quotesRef = quotesDatabase.child(quoteKey);
         quotesRef.removeValue().addOnCompleteListener(task -> {
             mainHander.post(() -> {
                 Intent intent = new Intent(ACTION_DELETE_RESULT);
@@ -98,6 +162,12 @@ public class FirebaseService extends Service {
                 sendBroadcast(intent);
             });
         });
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        executorService.shutdown();
     }
 
 

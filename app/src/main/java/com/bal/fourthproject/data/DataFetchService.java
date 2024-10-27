@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.text.style.TtsSpan;
 import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
@@ -30,7 +31,7 @@ public class DataFetchService extends Service {
     private ExecutorService executorService;
     private ExecutorService secondExecutorService;
     private Handler mainHandler;
-    private static final String TAG = "DataFetchService";
+    private final String TAG = "DataFetchService";
 
     @Override
     public void onCreate() {
@@ -73,54 +74,64 @@ public class DataFetchService extends Service {
     }
 
     private void fetchAllCharacters() {
-        executorService.execute(() -> {
-            RickAndMortyApiService apiService = ApiClient.getApiService();
-            Call<CharacterResponse> call = apiService.getCharacters();
-            call.enqueue(new Callback<CharacterResponse>() {
-                @Override
-                public void onResponse(Call<CharacterResponse> call, Response<CharacterResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
-                        List<Character> characters = response.body().getCharacters();
-                        mainHandler.post(() -> sendBroadcast(characters));
-                    } else {
-                        Log.e(TAG, "Ошибка: " + response.code());
+        try {
+            executorService.execute(() -> {
+                RickAndMortyApiService apiService = ApiClient.getApiService();
+                Call<CharacterResponse> call = apiService.getCharacters();
+                call.enqueue(new Callback<CharacterResponse>() {
+                    @Override
+                    public void onResponse(Call<CharacterResponse> call, Response<CharacterResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            List<Character> characters = response.body().getCharacters();
+                            mainHandler.post(() -> sendBroadcast(characters));
+                        } else {
+                            Log.e(TAG, "Ошибка: " + response.code());
+                        }
                     }
-                }
 
-                @Override
-                public void onFailure(Call<CharacterResponse> call, Throwable t) {
-                    Log.e(TAG, "Ошибка загрузки данных: " + t.getMessage());
-                }
+                    @Override
+                    public void onFailure(Call<CharacterResponse> call, Throwable t) {
+                        Log.e(TAG, "Ошибка загрузки данных: " + t.getMessage());
+                    }
+                });
             });
-        });
+        } catch (OutOfMemoryError e){
+            executorService.shutdown();
+        }
+
     }
 
     private void searchCharactersByName(String name, String gender, String origin, String species) {
-        secondExecutorService.execute(()->{
-            RickAndMortyApiService apiService = ApiClient.getApiService();
-            Call<CharacterResponse> call = apiService.searchCharacters(name, gender, species, origin);
+        try {
+            secondExecutorService.execute(()->{
+                RickAndMortyApiService apiService = ApiClient.getApiService();
+                Call<CharacterResponse> call = apiService.searchCharacters(name, gender, species, origin);
 
-            call.enqueue(new Callback<CharacterResponse>() {
-                @Override
-                public void onResponse(Call<CharacterResponse> call, Response<CharacterResponse> response) {
-                    if (response.isSuccessful() && response.body() != null) {
+                call.enqueue(new Callback<CharacterResponse>() {
+                    @Override
+                    public void onResponse(Call<CharacterResponse> call, Response<CharacterResponse> response) {
+                        if (response.isSuccessful() && response.body() != null) {
 
-                        List<Character> characters = response.body().getCharacters();
-                        mainHandler.post(() -> sendBroadcast(characters));
-                        for (Character character : characters) {
-                            Log.d("DataFetchService", "Character: " + character.toString());
+                            List<Character> characters = response.body().getCharacters();
+                            mainHandler.post(() -> sendBroadcast(characters));
+                            for (Character character : characters) {
+                                Log.d("DataFetchService", "Character: " + character.toString());
+                            }
+                        } else {
+                            Log.e("DataFetchService", "Ошибка: " + response.code());
                         }
-                    } else {
-                        Log.e("DataFetchService", "Ошибка: " + response.code());
                     }
-                }
 
-                @Override
-                public void onFailure(Call<CharacterResponse> call, Throwable t) {
-                    Log.e("DataFetchService", "Ошибка загрузки данных: " + t.getMessage());
-                }
+                    @Override
+                    public void onFailure(Call<CharacterResponse> call, Throwable t) {
+                        Log.e("DataFetchService", "Ошибка загрузки данных: " + t.getMessage());
+                    }
+                });
             });
-        });
+        } catch (OutOfMemoryError e ){
+            secondExecutorService.shutdown();
+        }
+
 
     }
 

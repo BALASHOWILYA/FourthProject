@@ -25,12 +25,14 @@ import com.bal.fourthproject.data.database.CharacterRepositoryImpl;
 import com.bal.fourthproject.domain.CharacterRepository;
 
 import java.util.ArrayList;
+import java.lang.ref.SoftReference;
 
 public class AllCharactersFragment extends Fragment {
 
     private RecyclerView recyclerView;
     private CharacterAdapter characterAdapter;
     private CharacterRepository characterRepository;
+    private SoftReference<ArrayList<Character>> charactersReference;
 
     private final BroadcastReceiver dataReceiver = new BroadcastReceiver() {
         @Override
@@ -38,7 +40,8 @@ public class AllCharactersFragment extends Fragment {
             if ("com.bal.fourthproject.DATA_UPDATED".equals(intent.getAction())) {
                 ArrayList<Character> characters = intent.getParcelableArrayListExtra("characters");
                 if (characters != null) {
-                    updateUI(characters);
+                    charactersReference = new SoftReference<>(characters);
+                    updateUI(charactersReference.get());
                 }
             }
         }
@@ -47,14 +50,12 @@ public class AllCharactersFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Инициализация базы данных, DAO и репозитория
         Context context = getContext();
         if (context != null) {
             AppDatabase db = AppDatabase.getInstance(context);
             CharacterDao characterDao = db.characterDao();
             characterRepository = new CharacterRepositoryImpl(characterDao);
 
-            // Регистрация BroadcastReceiver
             LocalBroadcastManager.getInstance(requireActivity())
                     .registerReceiver(dataReceiver, new IntentFilter("com.bal.fourthproject.DATA_UPDATED"));
         }
@@ -78,12 +79,17 @@ public class AllCharactersFragment extends Fragment {
     }
 
     private void updateUI(ArrayList<Character> characters) {
-        characterAdapter.setCharacters(characters);
+        if (characters != null) {
+            characterAdapter.setCharacters(characters);
+        }
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         LocalBroadcastManager.getInstance(requireActivity()).unregisterReceiver(dataReceiver);
+        if (charactersReference != null) {
+            charactersReference.clear();
+        }
     }
 }

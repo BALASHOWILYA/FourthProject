@@ -44,28 +44,33 @@ public class EpisodeFetchService extends Service {
     }
 
     private void fetchEpisodeById(int episodeId) {
-        executorService.execute(()->{
-            RickAndMortyApiService apiService = ApiClient.getApiService();
-            Call<Episode> call = apiService.getEpisodeById(episodeId);
-            call.enqueue(new Callback<Episode>() {
-                @Override
-                public void onResponse(Call<Episode> call, Response<Episode> response) {
-                    if (response.isSuccessful() && response.body() != null){
-                        Episode episode = response.body();
-                        Log.d("Episode", "Episode:" + episode.getName() + episode.getAirDate());
-                        mainHander.post(() -> sendEpisodeBroadcast(episode));
+        try {
+            executorService.execute(()->{
+                RickAndMortyApiService apiService = ApiClient.getApiService();
+                Call<Episode> call = apiService.getEpisodeById(episodeId);
+                call.enqueue(new Callback<Episode>() {
+                    @Override
+                    public void onResponse(Call<Episode> call, Response<Episode> response) {
+                        if (response.isSuccessful() && response.body() != null){
+                            Episode episode = response.body();
+                            Log.d("Episode", "Episode:" + episode.getName() + episode.getAirDate());
+                            mainHander.post(() -> sendEpisodeBroadcast(episode));
+                        }
                     }
-                }
 
-                @Override
-                public void onFailure(Call<Episode> call, Throwable t) {
-                    Log.d("Episode", "loading exception");
+                    @Override
+                    public void onFailure(Call<Episode> call, Throwable t) {
+                        Log.d("Episode", "loading exception");
 
-                }
+                    }
+                });
+
+
             });
+        } catch (OutOfMemoryError e ){
+            executorService.shutdown();
+        }
 
-
-        });
 
     }
 

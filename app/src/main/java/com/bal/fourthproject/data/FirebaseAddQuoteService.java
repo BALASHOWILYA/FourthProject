@@ -39,9 +39,14 @@ public class FirebaseAddQuoteService extends Service {
             String authorId = intent.getStringExtra(EXTRA_AUTHOR_ID);  // Получаем authorId
 
             if (quote != null && author != null && authorId != null) {
-                executorService.execute(() -> {
-                    addQuoteToDB(quote, author, authorId);  // Передаём authorId
-                });
+                try {
+                    executorService.execute(() -> {
+                        addQuoteToDB(quote, author, authorId);  // Передаём authorId
+                    });
+                } catch (OutOfMemoryError e){
+                    executorService.shutdown();
+                }
+
             } else {
                 Toast.makeText(this, "Данные не переданы", Toast.LENGTH_SHORT).show();
             }
@@ -71,6 +76,12 @@ public class FirebaseAddQuoteService extends Service {
                 stopSelf(); // Останавливаем сервис после выполнения задачи
             }
         });
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        executorService.shutdown();
     }
 
     @Override

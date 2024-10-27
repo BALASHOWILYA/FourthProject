@@ -24,20 +24,22 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class QuotesFragment extends Fragment implements QuotesAdapter.OnDeleteClickListener {
+public class QuotesFragment extends Fragment implements QuotesAdapter.OnDeleteClickListener, QuotesAdapter.OnUpdateClickListener {
 
     private FloatingActionButton floatingActionButton;
-    private AddQuateFragment addQuateFragment = new AddQuateFragment();
+    private AddQuateFragment addQuateFragment;
+    private UpdateQuotesFragment updateQuotesFragment;
     private RecyclerView quotesRecyclerView;
     private QuotesAdapter quotesAdapter;
     private List<Map<String, String>> quotesList = new ArrayList<>();
     private String autherId;  // UID пользователя
 
-    private BroadcastReceiver quotesReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver quotesReceiver = new BroadcastReceiver() {
         @SuppressLint("NotifyDataSetChanged")
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -53,16 +55,15 @@ public class QuotesFragment extends Fragment implements QuotesAdapter.OnDeleteCl
                 if (receivedQuotes != null) {
                     quotesList.clear();
                     quotesList.addAll(receivedQuotes);
-                    quotesAdapter.notifyDataSetChanged();  // Обновление адаптера
+                    quotesAdapter.notifyDataSetChanged();
                 } else {
-                    // Обработка случая, когда список пустой
                     Toast.makeText(context, "Нет данных для отображения", Toast.LENGTH_SHORT).show();
                 }
             }
         }
     };
 
-    private BroadcastReceiver deleteReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver deleteReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (FirebaseService.ACTION_DELETE_RESULT.equals(intent.getAction())) {
@@ -85,7 +86,6 @@ public class QuotesFragment extends Fragment implements QuotesAdapter.OnDeleteCl
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Получение UID текущего пользователя
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user != null) {
             autherId = user.getUid();
@@ -97,10 +97,11 @@ public class QuotesFragment extends Fragment implements QuotesAdapter.OnDeleteCl
         floatingActionButton = view.findViewById(R.id.floatingButton);
         quotesRecyclerView = view.findViewById(R.id.quotesRecyclerView);
         quotesRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-        quotesAdapter = new QuotesAdapter(quotesList, autherId, this);  // Передача UID в адаптер
+        quotesAdapter = new QuotesAdapter(quotesList, autherId, this::onDeleteClick, this::onUpdateClick);
         quotesRecyclerView.setAdapter(quotesAdapter);
 
         floatingActionButton.setOnClickListener(v -> {
+            if (addQuateFragment == null) addQuateFragment = new AddQuateFragment();
             replaceFragment(addQuateFragment, R.id.first_fragment_container);
         });
 
@@ -151,5 +152,23 @@ public class QuotesFragment extends Fragment implements QuotesAdapter.OnDeleteCl
         intent.setAction(FirebaseService.ACTION_DELETE_QUOTE);
         intent.putExtra(FirebaseService.QUOTE_KEY_EXTRA, key);
         requireContext().startService(intent);
+    }
+
+    @Override
+    public void onUpdateClick(int position) {
+        String quote = quotesList.get(position).get("quote");
+        String author = quotesList.get(position).get("author");
+        String authorId = quotesList.get(position).get("authorId");
+        String key = quotesList.get(position).get("key");
+
+        Bundle bundle = new Bundle();
+        bundle.putString("quote", quote);
+        bundle.putString("author", author);
+        bundle.putString("authorId", authorId);
+        bundle.putString("key", key);
+
+        if (updateQuotesFragment == null) updateQuotesFragment = new UpdateQuotesFragment();
+        updateQuotesFragment.setArguments(bundle);
+        replaceFragment(updateQuotesFragment, R.id.first_fragment_container);
     }
 }

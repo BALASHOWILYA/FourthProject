@@ -18,11 +18,13 @@ public class QuotesAdapter extends RecyclerView.Adapter<QuotesAdapter.QuoteViewH
 
     private List<Map<String, String>> quotesList;
     private QuotesAdapter.OnDeleteClickListener onDeleteClickListener;
+    private QuotesAdapter.OnUpdateClickListener onUpdateClickListener;
     private String currentUserId; // Используем ID текущего пользователя
 
-    public QuotesAdapter(List<Map<String, String>> quotesList, String currentUserId, QuotesAdapter.OnDeleteClickListener onDeleteClickListener) {
+    public QuotesAdapter(List<Map<String, String>> quotesList, String currentUserId, QuotesAdapter.OnDeleteClickListener onDeleteClickListener, QuotesAdapter.OnUpdateClickListener onUpdateClickListener) {
         this.quotesList = quotesList;
         this.onDeleteClickListener = onDeleteClickListener;
+        this.onUpdateClickListener = onUpdateClickListener;
         this.currentUserId = currentUserId;
     }
 
@@ -44,13 +46,21 @@ public class QuotesAdapter extends RecyclerView.Adapter<QuotesAdapter.QuoteViewH
         // Если текущий пользователь является автором цитаты, показываем кнопку удаления
         if (currentUserId.equals(authorId)) {
             holder.deleteButton.setVisibility(View.VISIBLE);
+            holder.updateButton.setVisibility(View.VISIBLE);
         } else {
             holder.deleteButton.setVisibility(View.GONE); // Скрываем кнопку для остальных
+            holder.updateButton.setVisibility(View.GONE);
         }
 
         holder.deleteButton.setOnClickListener(v -> {
             if (onDeleteClickListener != null) {
                 onDeleteClickListener.onDeleteClick(position);
+            }
+        });
+
+        holder.updateButton.setOnClickListener(v->{
+            if(onUpdateClickListener != null){
+                onUpdateClickListener.onUpdateClick(position);
             }
         });
     }
@@ -65,6 +75,7 @@ public class QuotesAdapter extends RecyclerView.Adapter<QuotesAdapter.QuoteViewH
         private TextView quoteTextView;
         private TextView authorTextView;
         private Button deleteButton;
+        private Button updateButton;
 
         public QuoteViewHolder(View view) {
             super(view);
@@ -72,6 +83,7 @@ public class QuotesAdapter extends RecyclerView.Adapter<QuotesAdapter.QuoteViewH
             quoteTextView = view.findViewById(R.id.quoteTextView);
             authorTextView = view.findViewById(R.id.authorTextView);
             deleteButton = view.findViewById(R.id.deleteButton);
+            updateButton = view.findViewById(R.id.updateButton);
         }
     }
 
@@ -79,5 +91,7 @@ public class QuotesAdapter extends RecyclerView.Adapter<QuotesAdapter.QuoteViewH
         void onDeleteClick(int position);
     }
 
-    //public interface OnUpdateClickListener
+    public interface OnUpdateClickListener{
+        void onUpdateClick(int position);
+    }
 }
